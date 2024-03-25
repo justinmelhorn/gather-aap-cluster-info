@@ -1,0 +1,24 @@
+- name: Test IOPS on target host
+  hosts: "{{ target_host }}"
+  tasks:
+    - name: Ensure fio is installed
+      ansible.builtin.package:
+        name: fio
+        state: present
+
+    - name: Test read IOPS
+      ansible.builtin.shell: fio --name=randread --ioengine=libaio --iodepth=16 --rw=randread --bs=4k --direct=0 --size=512M --numjobs=4 --runtime=240 --group_reporting
+      register: iops_read
+   
+    - name: Write IOPS
+      ansible.builtin.shell: fio --name=randwrite --ioengine=libaio --iodepth=16 --rw=randwrite --bs=4k --direct=0 --size=512M --numjobs=2 --runtime=240 --group_reporting
+      register: iops_write
+    - name: write to file      
+      ansible.builtin.lineinfile:
+        path:  "../{{ env }}-system_info.txt"
+        line: |
+          "Hostname: {{ ansible_hostname }}""
+          "[IOPS Test]"
+          "Read IOPS: {{ iops_read.stdout }}"
+          "Write IOPS: {{ iops_write.stdout }}"
+      delegate_to: localhost

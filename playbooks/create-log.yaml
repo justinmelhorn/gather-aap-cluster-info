@@ -1,0 +1,8 @@
+---
+- name: Create log
+  hosts: localhost
+  tasks:
+    - name: Create log file
+      ansible.builtin.copy:
+        content: ""
+        dest: ../{{ env }}-system_info.txt

@@ -1,0 +1,46 @@
+---
+- name: Gather system information
+  hosts: "{{ target_host }}" 
+  gather_facts: yes
+  tasks:
+    - name: Display system information
+      ansible.builtin.debug:
+        msg: |
+          Hostname: {{ ansible_hostname }}
+          CPUs: {{ ansible_processor_vcpus }}
+          CPUModel: {{ ansible_processor }}
+          Total RAM: {{ ansible_memtotal_mb | int / 1024 }} GB
+      register: system_info
+            
+    - name: Check size of a mounted filesystem
+      ansible.builtin.debug:
+        msg: |
+          Filesystem: {{ item.mount }}
+          Size: {{ item.size_total }} bytes
+          Free: {{ item.size_available }} bytes
+      loop: "{{ ansible_mounts }}"
+      when: item.mount == mount_point
+    - name: Gather size and contents of mount directory
+
+      ansible.builtin.shell: "ls -lah {{ mount_point }}"
+      register: mount_contents
+
+    - name: Set fact when mount is correct
+      ansible.builtin.set_fact:
+        mount_info: "{{ item }}"
+      when: item.mount == mount_point
+      loop: "{{ ansible_mounts }}"
+
+    - name: Add system information to a file
+      ansible.builtin.lineinfile:
+        path:  "../{{ env }}-system_info.txt"
+        line: |
+          Hostname: {{ ansible_hostname }}
+          CPUs: {{ ansible_processor_vcpus }}
+          CPU Model: {{ ansible_processor }}
+          Total RAM in GB: {{ ansible_memtotal_mb | int / 1024 }} GB
+          Size: {{ mount_info.size_total | human_readable }}
+          Free: {{ mount_info.size_available | human_readable }}
+          Contents of File: {{ mount_contents.stdout }}
+      delegate_to: localhost
+  

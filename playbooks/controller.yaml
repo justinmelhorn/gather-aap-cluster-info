@@ -1,0 +1,85 @@
+---
+- name: Gather system information
+  hosts: automationcontroller[0]
+  become: true
+  tasks:
+    - name: Controller info
+      ansible.builtin.lineinfile:
+        path:  "../{{ env }}-system_info.txt"
+        line: "Controller info"
+      delegate_to: localhost
+
+    - name: Check how many job templates are on the controller
+      ansible.builtin.uri:
+        url: "https://{{ controller }}/api/v2/job_templates/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ controller_admin_username }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: no
+      register: job_templates
+
+    - name: Check how many inventories are on the controller
+      ansible.builtin.uri:
+        url: "https://{{ controller }}/api/v2/inventories/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ controller_admin_username }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: no
+      register: inventories
+
+    - name: Check how many hosts are on the controller
+      ansible.builtin.uri:
+        url: "https://{{ controller }}/api/v2/hosts/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ controller_admin_username }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: no
+      register: hosts
+  
+    - name: Check how many workfows are on the controller
+      ansible.builtin.uri:
+        url: "https://{{ controller }}/api/v2/workflow_job_templates/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ controller_admin_username }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: no
+      register: workflows
+
+    - name: Check how many credentials are on the controller
+      ansible.builtin.uri:
+        url: "https://{{ controller }}/api/v2/credentials/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ controller_admin_username }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: no
+      register: credentials
+
+    - name: Check how many projects are on the controller
+      ansible.builtin.uri:
+        url: "https://{{ controller }}/api/v2/projects/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ controller_admin_username }}"
+        password: "{{ controller_admin_password }}"
+        validate_certs: no
+      register: projects
+
+    - name: Add the gathered information to file
+      ansible.builtin.lineinfile:
+        path: "../{{ env }}-system_info.txt"
+        line: |
+          Job Templates: {{ job_templates.json.count }}
+          Inventories: {{ inventories.json.count }}
+          Hosts: {{ hosts.json.count }}
+          Projects: {{ projects.json.count }}
+          Workflows: {{ workflows.json.count }}
+          Credentials: {{ credentials.json.count }}
+      delegate_to: localhost
+      run_once: true 
+
+

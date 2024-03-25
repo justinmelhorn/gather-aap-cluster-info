@@ -1,0 +1,63 @@
+---
+# controllers
+- ansible.builtin.import_playbook: ./playbooks/create-log.yaml
+
+- ansible.builtin.import_playbook: ./playbooks/display-group.yaml
+  vars:
+    target_host: "{{groups['automationcontroller'][0]}}"
+
+- ansible.builtin.import_playbook: ./playbooks/gather.yaml
+  vars:
+    target_host: "{{groups['automationcontroller']}}"
+    mount_point: '/var/lib/awx'
+# controller database
+- ansible.builtin.import_playbook: ./playbooks/display-group.yaml
+  vars:
+    target_host: "{{groups['controller_database'][0]}}"
+
+- ansible.builtin.import_playbook: ./playbooks/gather.yaml
+  vars:
+    target_host: "{{groups['controller_database']}}"
+    mount_point: '/var/lib/pgsql'
+
+- ansible.builtin.import_playbook: ./playbooks/iops.yaml
+  vars:
+    target_host: "{{groups['controller_database'][0]}}"
+# Execution Nodes   
+- ansible.builtin.import_playbook: ./playbooks/display-group.yaml
+  vars:
+    target_host: "{{groups['execution_nodes'][0]}}"
+
+- ansible.builtin.import_playbook: ./playbooks/gather.yaml
+  vars:
+    target_host: "{{groups['execution_nodes']}}"
+    mount_point: '/var/lib/awx'
+# hub
+
+- ansible.builtin.import_playbook: ./playbooks/controller.yaml
+
+- ansible.builtin.import_playbook: ./playbooks/display-group.yaml
+  vars:
+    target_host: "{{groups['automationhub'][0]}}"
+
+- ansible.builtin.import_playbook: ./playbooks/gather.yaml
+  vars:
+    target_host: "{{groups['automationhub'][0]}}"
+    mount_point: '/var/lib/pulp'
+
+- ansible.builtin.import_playbook: ./playbooks/hub.yaml
+
+#hub db
+
+- ansible.builtin.import_playbook: ./playbooks/display-group.yaml
+  vars:
+    target_host: "{{groups['hub_database'][0]}}"
+
+- ansible.builtin.import_playbook: ./playbooks/gather.yaml
+  vars:
+    target_host: "{{groups['hub_database']}}"
+    mount_point: '/var/lib/pgsql'
+
+- ansible.builtin.import_playbook: ./playbooks/iops.yaml
+  vars:
+    target_host: "{{groups['hub_database'][0]}}"

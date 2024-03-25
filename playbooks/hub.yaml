@@ -1,0 +1,38 @@
+---
+- name: Gather info on hub servers
+  hosts: automationhub[0]
+  tasks:
+    - name: Hub info
+      ansible.builtin.lineinfile:
+        path:  "../{{ env }}-system_info.txt"
+        line: "Hub info"
+      delegate_to: localhost
+
+    - name: Gather number of execution environments stored on hub
+      ansible.builtin.uri:
+        url: "https://{{ automationhub }}/pulp/api/v3/pulp_container/namespaces/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ pah_admin_username }}"
+        password: "{{ pah_admin_password }}"
+        validate_certs: no
+      register: environments
+
+    - name: Gather number of collection namespaces stored on hub
+      ansible.builtin.uri:
+        url: "https://{{ automationhub }}/pulp/api/v3/pulp_ansible/namespaces/"
+        method: GET
+        force_basic_auth: yes
+        user: "{{ pah_admin_username }}"
+        password: "{{ pah_admin_password }}"
+        validate_certs: no
+      register: collections
+
+    - name: Add hub info to file
+      ansible.builtin.lineinfile:
+        path:  "../{{ env }}-system_info.txt"
+        line: | 
+          "[Automation Hub]"
+          "Execution Environments: {{ environments.json.count }}"
+          "Collection Namespaces: {{ collections.json.count }}"
+      delegate_to: localhost

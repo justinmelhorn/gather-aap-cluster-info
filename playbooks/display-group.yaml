@@ -1,0 +1,8 @@
+- name: Display group names
+  hosts: "{{ target_host }}"
+  tasks:
+    - name: Add system information to a file
+      ansible.builtin.lineinfile:
+        path:  "../{{ env }}-system_info.txt"
+        line: "{{ group_names }}"
+      delegate_to: localhost
