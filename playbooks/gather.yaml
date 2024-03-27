@@ -11,7 +11,7 @@
           CPUModel: {{ ansible_processor }}
           Total RAM: {{ ansible_memtotal_mb | int / 1024 }} GB
       register: system_info
-            
+  
     - name: Check size of a mounted filesystem
       ansible.builtin.debug:
         msg: |
@@ -39,8 +39,8 @@
           CPUs: {{ ansible_processor_vcpus }}
           CPU Model: {{ ansible_processor }}
           Total RAM in GB: {{ ansible_memtotal_mb | int / 1024 }} GB
-          Size: {{ mount_info.size_total | human_readable }}
-          Free: {{ mount_info.size_available | human_readable }}
+          Size of {{mount_info.mount}}: {{ mount_info.size_total | human_readable }}
+          Free in  {{mount_info.mount}}:: {{ mount_info.size_available | human_readable }}
           Contents of File: {{ mount_contents.stdout }}
       delegate_to: localhost
   
